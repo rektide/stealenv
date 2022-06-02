@@ -1,0 +1,16 @@
+#!/bin/sh
+
+file=$1
+shift
+matches="$(echo $* | sed 's/ /|^/' )"
+target="${STEALENV_TARGET:-.taskDefinitionProps.envVariables}"
+
+# hat tip to @zirak for the filtering technique
+# https://github.com/stedolan/jq/issues/2062#issue-567395464
+jq "$target |
+    to_entries |
+    [
+        .[] |
+        select(.key | test(\"^$matches\"))
+    ] |
+    from_entries" $file | convert-json-env - - --quiet
